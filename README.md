@@ -1,39 +1,324 @@
 Multilevel queue scheduling algorithm is used in situations in which the processes can be divided into groups in a multi-queue scheduling algorithm, the number of queues would be 'n' where 'n' is the number of categories the processes are listed into. Every queue will be given priority and will have its own programming algorithm such as round-robin scheduling or FCFS.  For the process in a queue to execute, all the queues of priority higher than it should be empty, meaning the process in those high priority queues should have completed its execution. In this scheduling algorithm, once assigned to a queue, the process will not move to any other queues.
 
-Total Number of Processes, Burst Time, System/User Process for these inputs will be taken by the USER.
+
+
+Student Name:  Aneesh pavan Prodduturu
+Student ID: 11801491
+Email Address:  aneeshpavan@gmail.com
+GitHub Link: https://github.com/aneeshpavan/Multilevelqueuescheduling
+
+
+
+Code: 
+	Queue 1 is used by Round Robin
+	Queue 2 is used by Priority
+	Queue 3 is used by First Come First serve
+
+#include<unistd.h>
+#include<stdlib.h>
+#include<fcntl.h>
+#include<sys/stat.h>
+#include<sys/types.h>
+#include<stdio.h>
+#include<sys/wait.h>
+#include<pthread.h>
+int arrival1[30],arrival2[30],priority2[30],process2[30],arrival3[30];
+int burst1[30],burst2[30],burst3[30];
+int Total=0,t1=0,t2=0,t3=0;
+int n,i,at[30],bt[30],pr[30],j=0,k=0,l=0;
+int total,x,temp[30],counter=0;
+float averagewaiting1=0.0,averageturnaround1=0.0;
+int p,waiting3[30],turnaround3[30];
+float averagewaiting3=0.0,averageturnaround3=0.0;
+int position,q,temp1,sum=0,waiting2[30],turnaround2[30];
+float averagewaiting2,averageturnaround2;
+
+void roundrobin()
+{
+	printf("Time Quantum for Queue1 is 4\n");
+	for(i=0;i<j;i++)
+	{
+		temp[i]=burst1[i];
+	} 
+	printf("\nProcess ID\tBurst Time\t Turnaround Time\t Waiting Time\n");
+	x=j;
+    for(i=0,total=0;x!=0;) 
+    { 
+    	if(temp[i]<=4&&temp[i]>0) 
+        {
+			printf("\nProcess[%d] of Queue1 is running for %d units",i+1,temp[i]); 
+            total=total+temp[i]; 
+            temp[i]=0; 
+            counter=1; 
+        } 
+        else if(temp[i]>0) 
+        {
+			printf("\nProcess[%d] of Queue1 is running for 4 units",i+1); 
+            temp[i]=temp[i]-4; 
+            total=total+4; 
+        } 
+        if(temp[i]==0&&counter==1) 
+        { 
+            x--; 
+            printf("\nProcess[%d]\t\t%d\t\t%d\t\t\t%d",i+1,burst1[i],total-arrival1[i],total-arrival1[i]-burst1[i]);
+            averagewaiting1=averagewaiting1+total-arrival1[i]-burst1[i]; 
+            averageturnaround1=averageturnaround1+total-arrival1[i]; 
+            counter = 0; 
+        } 
+        if(i==j-1) 
+        {
+            i=0; 
+        }
+        else if(arrival1[i+1]<=total) 
+        {
+            i++;
+        }
+        else 
+        {
+            i=0;
+        }
+    } 
+    averagewaiting1=averagewaiting1/j;
+    averageturnaround1=averageturnaround1/j;
+    printf("\nAverage Waiting Time:%f",averagewaiting1); 
+    printf("\nAverage Turnaround Time:%f\n",averageturnaround1); 
+}
+
+void priority()
+{
+	for(i=0;i<k;i++)
+    {
+        position=i;
+        for(q=i+1;q<k;q++)
+        {
+            if(priority2[q]<priority2[position])
+            {
+                position=q;
+            }
+        }
+        temp1=priority2[i];
+        priority2[i]=priority2[position];
+        priority2[position]=temp1; 
+        
+        temp1=burst2[i];
+        burst2[i]=burst2[position];
+        burst2[position]=temp1;
+        
+        temp1=process2[i];
+        process2[i]=process2[position];
+        process2[position]=temp1;
+    }
+    waiting2[0]=0;
+    for(i=1;i<k;i++)
+    {
+        waiting2[i]=0;
+        for(q=0;q<i;q++)
+        {
+            waiting2[i]=waiting2[i]+burst2[j];
+        }
+        sum=sum+waiting2[i];
+    }
+    averagewaiting2=sum/k;
+    sum=0;
+    printf("\nProcess ID\t\tBurst Time\t Waiting Time\t Turnaround Time\n");
+    for(i=0;i<k;i++)
+    {
+    	turnaround2[i]=burst2[i]+waiting2[i];
+        sum=sum+turnaround2[i];
+        printf("\nProcess[%d]\t\t%d\t\t%d\t\t\t%d\n",process2[i],burst2[i],waiting2[i],turnaround2[i]);
+    }
+    averageturnaround2=sum/k;
+    printf("\nAverage Waiting Time:\t%f",averagewaiting2);
+    printf("\nAverage Turnaround Time:\t%f\n",averageturnaround2);
+    
+    for(i=0;i<k;i++)
+    {
+    	while(burst2[i]!=0)
+    	{
+    		if(burst2[i]>10)
+    		{
+				printf("\nProcess[%d] of Queue2 is running for 10 units",i+1);
+				burst2[i]=burst2[i]-10;
+			}
+			else if(burst2[i]<=10)
+			{
+				printf("\nProcess[%d] of Queue2 is running for %d units",i+1,burst2[i]);
+				burst2[i]=0;
+			}
+		}
+	}
+
+}
+
+void firstcomefirstserve()
+{
+	waiting3[0] = 0;   
+    for(i=1;i<l;i++)
+    {
+        waiting3[i] = 0;
+        for(p=0;p<l;p++)
+        {
+            waiting3[i]=waiting3[i]+burst3[p];
+        }
+    }
+    printf("\nProcess\t\tBurst Time\tWaiting Time\tTurnaround Time\n");
+    for(i=0;i<l;i++)
+    {
+        turnaround3[i]=burst3[i]+waiting3[i];
+        averagewaiting3=averagewaiting3+waiting3[i];
+        averageturnaround3=averageturnaround3+turnaround3[i];
+        printf("\nProcess[%d]\t\t%d\t\t%d\t\t\t%d\n",i+1,burst3[i],waiting3[i],turnaround3[i]);
+    }
+    averagewaiting3=averagewaiting3/l;
+    averageturnaround3=averageturnaround3/l;
+    printf("\nAverage Waiting Time=%f",averagewaiting3);
+    printf("\nAverage Turnaround Time=%f",averageturnaround3);
+    for(i=0;i<l;i++)
+    {
+    	while(burst3[i]!=0)
+    	{
+    		if(burst3[i]>10)
+    		{
+				printf("\nProcess[%d] of Queue3 is running for 10 units",i+1);
+				burst3[i]=burst3[i]-10;
+			}
+			else if(burst3[i]<=10)
+			{
+				printf("\nProcess[%d] of Queue2 is running for %d units",i+1,burst3[i]);
+				burst3[i]=0;
+			}
+		}
+	}
+}
+
+void roundrobin1()
+{
+	printf("Time Quantum between the 3 queues is 10\n");
+	for(i=1;i<Total;i=i+10)
+	{
+		if(t1>10)
+		{
+			printf("Queue1 is running for 10 units\n");
+			t1=t1-10;
+		}
+		else if(t1<=10&&t1!=0)
+		{
+			printf("Queue1 is running for %d units\n",t1);
+			t1=0;
+		}
+		if(t2>10)
+		{
+			printf("Queue2 is running for 10 units\n");
+			t2=t2-10;
+		}
+		else if(t2<=10&&t2!=0)
+		{
+			printf("Queue2 is running for %d units\n",t2);
+			t2=0;
+		}
+		if(t3>10)
+		{
+			printf("Queue3 is running for 10 units\n");
+			t3=t3-10;
+		}
+		else if(t3<=10&&t3!=0)
+		{
+			printf("Queue3 is running for %d units\n",t3);
+			t3=0;
+		}
+	}
+}
+
+int main()
+{
+	printf("Enter the no. of process you want to enter\n");
+	scanf("%d",&n);
+	for(i=0;i<n;i++)
+	{
+		printf("Enter details of process[%d]\n",i+1);
+		printf("Arrival Time:");
+		scanf("%d",&at[i]);
+		printf("Burst Time:");
+		scanf("%d",&bt[i]);
+		printf("Priority(1 to 15):");
+		scanf("%d",&pr[i]);
+		Total=Total+bt[i];
+	}
+	for(i=0;i<n;i++)
+	{
+		if(pr[i]>=1&&pr[i]<=5)
+		{
+			printf("\n\nProcess[%d] belongs to Queue 1\n",i+1);
+			arrival1[j]=at[i];
+			burst1[j]=bt[i];
+			j++;
+			t1=t1+bt[i];
+		}
+		
+		else if(pr[i]>=6&&pr[i]<=10)
+		{
+			printf("Process[%d] belongs to Queue 2\n",i+1);
+			arrival2[k]=at[i];
+			burst2[k]=bt[i];
+			priority2[k]=pr[i];
+			process2[k]=k+1;
+			k++;
+			t2=t2+bt[i];
+		}
+		
+		else if(pr[i]>=11&&pr[i]<=15)
+		{
+			printf("Process[%d] belongs to Queue 3\n\n\n\n",i+1);
+			arrival3[l]=at[i];
+			burst3[l]=bt[i];
+			l++;
+			t3=t3+bt[i];
+		}
+	}
+	
+	roundrobin1();
+	roundrobin();
+	firstcomefirstserve();
+	priority();
+	
+	return 0;
+}
+
+Description:  
+Multilevel queue scheduling algorithm is used in situations in which the processes can be divided into groups in a multi-queue scheduling algorithm, the number of queues would be 'n' where 'n' is the number of categories the processes are listed into. Every queue will be given priority and will have its own programming algorithm such as round-robin scheduling or FCFS.  For the process in a queue to execute, all the queues of priority higher than it should be empty, meaning the process in those high priority queues should have completed its execution. In this scheduling algorithm, once assigned to a queue, the process will not move to any other queues.
+
+Total Number of Processes, Burst Time, Arrival Time, Priority for these inputs will be taken by the USER.
+Arrival,Priority,Burst,Turnaround,WaitingTime 
+ending with 1 i.e., burst1 are used by Round Robin
+ending with 2 i.e., burst2 are used by Priority
+ending with 3 i.e., burst3 are used by  First Come First Serve
 Burst time: Burst time is the total time taken by the process for its execution on the CPU.
 Waiting time: Waiting time is the total time spent by the process in the ready state waiting for CPU
 For Calculating Waiting Time:  
 		Waiting Time = Turnaround time – Burst Time
 					(OR)
-		waitingtime[i] = waitingtime[i-1] + bursttime[i-1]; I used this in my CODE.
+		waitingtime[i] = waitingtime[i-1] + bursttime[i-1];
 Turnaround Time: Turnaround time is the total amount of time spent by the process from coming in the ready state for the first time to its completion.
 For Calculating Turnaround Time: 
 		Turnaround Time = Burst Time + Waiting Time 
 					(OR)
 		Turnaround Time = Exit Time – Arrival Time
 					(OR)
-		turnaroundtime[i] = turnaroundtime[i-1] + bursttime[i]; I used this in my CODE.
+		turnaroundtime[i] = turnaroundtime[i-1] + bursttime[i];
 For Calculating Average Waiting Time:
 		Total Waiting Time / Number of Processes
 					(OR)
 		Average Waitingtime = Average Waiting Time + Waiting Time[i];
-		Average Waitingtime/Number of Processes; I used this in my CODE.
+		Average Waitingtime/Number of Processes;
 For Calculating Average Turnaround Time:
 		Total Turnaround Time / Number of Processes
 					(OR)
 		Average Turnaround = average Turnaround + Turnaround Time[i];
-		Average Turnaround / Number of Processes; I used this in my CODE.
+		Average Turnaround / Number of Processes;
 
 
 For Executing the CODE in Operating System (Ubuntu):
 	Open Terminal in the file location
- 	Gcc Filename.c // GCC is for compiling the CODE
+ 	gcc Filename.c // GCC is for compiling the CODE
 	After compiling,
 	./a.out //for Getting the output
-	Enter the number of processes: // Input will be given by the USER
-	Enter the Burst Time of Process _: //Input will be given by the USER
-	Enter the System/User Process:  //Input will be given by the USER
-	Will be Repeated till the number of processes completes
-	Then the Output will be in tabular format of Process, System/user Process, burst time, Waiting Time, Turnaround Time and output for Average waiting time and Turnaround time will be Printed.
-
