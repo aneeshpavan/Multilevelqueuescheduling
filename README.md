@@ -322,3 +322,4 @@ For Executing the CODE in Operating System (Ubuntu):
  	gcc Filename.c // GCC is for compiling the CODE
 	After compiling,
 	./a.out //for Getting the output
+        
